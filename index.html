@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Indian Stock Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f7fa; text-align: center; }
+    h1 { color: #0066cc; }
+    #chart { width: 90%; height: 400px; margin: auto; }
+    #status { margin-top: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>📈 Indian Stock Dashboard</h1>
+  <input id="symbol" placeholder="Enter Symbol (e.g., TATAMOTORS)">
+  <button onclick="loadData()">Search</button>
+  <div id="chart"></div>
+  <p id="status"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    async function loadData() {
+      const symbol = document.getElementById("symbol").value || "TATAMOTORS";
+      document.getElementById("status").innerText = "⏳ Loading...";
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/history?symbol=${symbol}`);
+        const json = await res.json();
+        document.getElementById("status").innerText = `✅ Loaded data for ${json.symbol}`;
+
+        const labels = json.data.map(d => d.time);
+        const prices = json.data.map(d => d.close);
+
+        // Chart.js Line Chart
+        const ctx = document.getElementById("chart").getContext("2d");
+        new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [{
+              label: json.symbol,
+              data: prices,
+              borderColor: "green",
+              fill: false
+            }]
+          }
+        });
+
+      } catch (e) {
+        console.error(e);
+        document.getElementById("status").innerText = "⚠️ Failed to fetch data";
+      }
+    }
+  </script>
+  <canvas id="chart"></canvas>
+</body>
+</html>
